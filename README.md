@@ -3,7 +3,6 @@
 > An interactive educational tool that visually demonstrates the **Pumping Lemma for Regular Languages** — helping students understand how it's used to prove that certain languages are **not regular**.
 
 ---
-Deployment Link: https://pumpinglemma.netlify.app/
 ## 📸 Overview
 
 This tool allows users to:
