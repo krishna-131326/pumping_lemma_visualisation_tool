@@ -116,16 +116,25 @@ const LANGUAGES = {
     name: "Custom Language",
     defaultString: "",
     defaultP: 3,
-    description: "User-defined string (membership checked structurally)",
-    check(s) { return true; /* custom: always show as "not verifiable" */ },
+    description: "User-defined string with optional regex membership check",
+    _regex: null,       // set at runtime from the custom-regex input
+    _displayName: "Custom Language",
+    check(s) {
+      if (!this._regex) return null; // null = manual check required
+      try { return this._regex.test(s); } catch(e) { return null; }
+    },
     proofText(x, y, z, p) {
+      const lname = this._displayName || "Custom Language";
       return [
-        { cls: "accent",    text: `Custom language selected.` },
-        { cls: "",          text: `Pumping lemma decomposition: x = "${x}", y = "${y}", z = "${z}".` },
-        { cls: "",          text: `Verify manually: does xy²z belong to your language?` },
-        { cls: "",          text: `If pumping any valid y produces a string outside the language,` },
-        { cls: "highlight", text: `→ That is your contradiction — the language cannot be regular!` },
-        { cls: "green",     text: `Apply this reasoning to your specific language definition.` }
+        { cls: "accent",    text: `Assume ${lname} is regular.` },
+        { cls: "",          text: `By the Pumping Lemma, ∃ pumping length p = ${p}.` },
+        { cls: "",          text: `Choose s = "${x+y+z}" ∈ L with |s| = ${(x+y+z).length} ≥ p = ${p}. ✓` },
+        { cls: "",          text: `Decompose: x = "${x}", y = "${y}" (|y| = ${y.length} ≥ 1 ✓), z = "${z}"` },
+        { cls: "",          text: `|xy| = ${x.length + y.length} ≤ p = ${p} ✓` },
+        { cls: "",          text: `Pump with i = 2: xy²z = "${x+y+y+z}"` },
+        { cls: "highlight", text: `→ Check: does xy²z = "${x+y+y+z}" still belong to ${lname}?` },
+        { cls: "highlight", text: `If xy²z ∉ L for ANY valid split, that is the contradiction!` },
+        { cls: "green",     text: `If such a contradiction exists, ${lname} is NOT regular. □` }
       ];
     }
   }
@@ -147,6 +156,11 @@ const langSelect    = document.getElementById('langSelect');
 const stringInput   = document.getElementById('stringInput');
 const pumpInput     = document.getElementById('pumpInput');
 const runBtn        = document.getElementById('runBtn');
+
+// Custom language panel
+const customLangPanel = document.getElementById('customLangPanel');
+const customLangName  = document.getElementById('customLangName');
+const customRegex     = document.getElementById('customRegex');
 
 const step2 = document.getElementById('step2');
 const step3 = document.getElementById('step3');
@@ -202,10 +216,13 @@ function decomposeString(s, p) {
 // ─── MEMBERSHIP CHECKS ───────────────────────────────────────────────────────
 
 function checkMembership(langKey, str) {
-  if (langKey === 'custom') return { inLang: null, reason: 'Custom — verify manually' };
   const lang = LANGUAGES[langKey];
-  const inLang = lang.check(str);
-  return { inLang, reason: inLang ? `"${str}" ∈ L ✓` : `"${str}" ∉ L ✗` };
+  const result = lang.check(str);
+  if (langKey === 'custom') {
+    if (result === null) return { inLang: null, reason: 'No regex — verify manually' };
+    return { inLang: result, reason: result ? `"${str}" ∈ L ✓` : `"${str}" ∉ L ✗` };
+  }
+  return { inLang: result, reason: result ? `"${str}" ∈ L ✓` : `"${str}" ∉ L ✗` };
 }
 
 // ─── BUILD SPLIT VISUAL ───────────────────────────────────────────────────────
@@ -269,8 +286,8 @@ function buildPumpTable(langKey, x, y, z) {
     const pumpedHTML = `<span class="str-x">${escHtml(x)}</span><span class="str-y">${escHtml(yPumped)}</span><span class="str-z">${escHtml(z)}</span>`;
 
     let inLangBadge, verdictBadge;
-    if (langKey === 'custom') {
-      inLangBadge = `<span class="badge-ok">Manual</span>`;
+    if (inLang === null) {
+      inLangBadge  = `<span class="badge-ok">Manual</span>`;
       verdictBadge = `<span class="badge-ok">Check manually</span>`;
     } else {
       inLangBadge = inLang
@@ -326,6 +343,27 @@ function runDemonstration() {
   const langKey = langSelect.value;
   const str     = stringInput.value.trim().toLowerCase();
   const p       = parseInt(pumpInput.value) || 3;
+
+  // ── Apply custom language definition if selected ──
+  if (langKey === 'custom') {
+    const nameVal  = customLangName.value.trim();
+    const regexVal = customRegex.value.trim();
+
+    LANGUAGES.custom._displayName = nameVal || 'Custom Language';
+    LANGUAGES.custom.name         = nameVal || 'Custom Language';
+
+    if (regexVal) {
+      try {
+        LANGUAGES.custom._regex = new RegExp(regexVal, 'i');
+      } catch (e) {
+        alert(`Invalid regex pattern: "${regexVal}"\n\nError: ${e.message}\n\nPlease fix the pattern or leave it blank for manual checking.`);
+        customRegex.focus();
+        return;
+      }
+    } else {
+      LANGUAGES.custom._regex = null; // manual mode
+    }
+  }
 
   // Validation
   if (!str) {
@@ -396,12 +434,12 @@ function runDemonstration() {
 // ─── MEMBERSHIP UPDATE ───────────────────────────────────────────────────────
 
 function updateMembership(langKey, pumped) {
-  if (langKey === 'custom') {
+  const { inLang } = checkMembership(langKey, pumped);
+  if (inLang === null) {
     membershipResult.className = 'membership-result in-lang';
     membershipResult.innerHTML = `xy<sup>${state.i}</sup>z = "${escHtml(pumped)}"  |  Length = ${pumped.length}  |  Check membership manually.`;
     return;
   }
-  const { inLang } = checkMembership(langKey, pumped);
   if (inLang) {
     membershipResult.className = 'membership-result in-lang';
     membershipResult.innerHTML = `xy<sup>${state.i}</sup>z = "${escHtml(pumped)}"  |  Length = ${pumped.length}  |  ✅ In language L`;
@@ -442,10 +480,18 @@ stringInput.addEventListener('keydown', e => {
 langSelect.addEventListener('change', () => {
   const langKey = langSelect.value;
   const lang = LANGUAGES[langKey];
-  if (langKey !== 'custom') {
+
+  // Show or hide custom language panel
+  if (langKey === 'custom') {
+    customLangPanel.classList.remove('hidden');
+    stringInput.value = '';
+    pumpInput.value   = lang.defaultP;
+  } else {
+    customLangPanel.classList.add('hidden');
     stringInput.value = lang.defaultString;
     pumpInput.value   = lang.defaultP;
   }
+
   // Hide downstream steps on change
   [step2, step3, step4, step5].forEach(hide);
 });
