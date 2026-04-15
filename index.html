@@ -126,6 +126,42 @@
           <input type="number" id="pumpInput" min="1" max="10" value="3"/>
         </div>
       </div>
+      <!-- CUSTOM LANGUAGE PANEL (shown only when Custom is selected) -->
+      <div class="custom-lang-panel hidden" id="customLangPanel">
+        <div class="custom-lang-header">
+          <span class="custom-lang-icon">✎</span>
+          <span>Define Your Custom Language</span>
+        </div>
+        <div class="input-grid">
+          <div class="input-group" style="grid-column: span 2;">
+            <label>Language Name / Description</label>
+            <input type="text" id="customLangName" placeholder="e.g.  L = { aⁿbⁿ | n ≥ 1 }  or  L = { ww | w ∈ {a,b}* }" maxlength="80"/>
+          </div>
+          <div class="input-group" style="grid-column: span 2;">
+            <label>Membership Check — JavaScript Regex Pattern</label>
+            <input type="text" id="customRegex" placeholder="e.g.  ^(a+)(b+)$  with equal groups — see hints below" maxlength="120"/>
+          </div>
+        </div>
+        <div class="custom-hints">
+          <div class="hint-title">💡 Regex hints</div>
+          <div class="hint-row">
+            <code>^(a+)(b+)$</code>
+            <span>matches any a…b… string (use with JS equality check below)</span>
+          </div>
+          <div class="hint-row">
+            <code>^a+$</code>
+            <span>only a's (e.g. L = { aⁿ | n ≥ 1 })</span>
+          </div>
+          <div class="hint-row">
+            <code>^(a*b*)*$</code>
+            <span>a's then b's, any count</span>
+          </div>
+          <div class="hint-note">
+            ⚠ For languages like a<sup>n</sup>b<sup>n</sup> that require counting, a regex alone can't fully verify membership. The tool will still decompose and visualise — verify the pumped results manually.
+          </div>
+        </div>
+      </div>
+
       <button class="run-btn" id="runBtn">Run Demonstration ▶</button>
     </div>
 
