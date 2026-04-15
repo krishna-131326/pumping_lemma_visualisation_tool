@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pumping Lemma Demo Tool</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo-block">
+        <span class="logo-icon">∑</span>
+        <div>
+          <div class="logo-title">Pumping Lemma</div>
+          <div class="logo-sub">Demonstration Tool · Regular Languages</div>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <a href="#tool">Tool</a>
+        <a href="#theory">Theory</a>
+        <a href="#examples">Examples</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Visualize the<br/><span class="accent">Pumping Lemma</span></h1>
+      <p class="hero-desc">Interactively split strings into <span class="tag-x">x</span><span class="tag-y">y</span><span class="tag-z">z</span> parts, pump the middle segment, and watch why certain languages cannot be recognized by any finite automaton.</p>
+      <a href="#tool" class="cta-btn">Start Demonstrating →</a>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="float-string">
+        <span class="fs-x">aaa</span><span class="fs-y">bb</span><span class="fs-z">ccc</span>
+      </div>
+      <div class="pump-arrows">
+        <span>↑ pump y ↑</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- THEORY SECTION -->
+  <section class="theory-section" id="theory">
+    <h2 class="section-title">What is the Pumping Lemma?</h2>
+    <div class="theory-cards">
+      <div class="tcard">
+        <div class="tcard-num">01</div>
+        <h3>The Lemma</h3>
+        <p>For every regular language <em>L</em>, there exists a pumping length <em>p</em> such that any string <em>s ∈ L</em> with |s| ≥ p can be split as <em>s = xyz</em> satisfying three conditions.</p>
+      </div>
+      <div class="tcard">
+        <div class="tcard-num">02</div>
+        <h3>Three Conditions</h3>
+        <ul>
+          <li>|<em>y</em>| ≥ 1 (y is non-empty)</li>
+          <li>|<em>xy</em>| ≤ p (stays within pump length)</li>
+          <li>∀i ≥ 0 : xy<sup>i</sup>z ∈ L (all pumpings stay in L)</li>
+        </ul>
+      </div>
+      <div class="tcard">
+        <div class="tcard-num">03</div>
+        <h3>Proof Strategy</h3>
+        <p>To prove L is <strong>not regular</strong>: assume it is, apply the lemma, then find a string where at least one pumped version <em>xy<sup>i</sup>z ∉ L</em> — a contradiction!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRESET EXAMPLES -->
+  <section class="examples-section" id="examples">
+    <h2 class="section-title">Classic Non-Regular Languages</h2>
+    <p class="section-sub">Click any example to load it into the tool below.</p>
+    <div class="example-cards">
+      <div class="ecard" data-lang="anbn" data-string="aaabbb" data-p="3">
+        <div class="ecard-lang">L = { a<sup>n</sup>b<sup>n</sup> | n ≥ 1 }</div>
+        <div class="ecard-str">String: <code>aaabbb</code></div>
+        <div class="ecard-why">Equal a's and b's — can't be counted by DFA</div>
+      </div>
+      <div class="ecard" data-lang="anbncn" data-string="aabbcc" data-p="2">
+        <div class="ecard-lang">L = { a<sup>n</sup>b<sup>n</sup>c<sup>n</sup> | n ≥ 1 }</div>
+        <div class="ecard-str">String: <code>aabbcc</code></div>
+        <div class="ecard-why">Three balanced groups — beyond DFA power</div>
+      </div>
+      <div class="ecard" data-lang="palindrome" data-string="abcba" data-p="3">
+        <div class="ecard-lang">L = { ww<sup>R</sup> | w ∈ {a,b}* }</div>
+        <div class="ecard-str">String: <code>abcba</code></div>
+        <div class="ecard-why">Palindromes require unbounded memory</div>
+      </div>
+      <div class="ecard" data-lang="a2n" data-string="aaaa" data-p="2">
+        <div class="ecard-lang">L = { a<sup>2<sup>n</sup></sup> | n ≥ 0 }</div>
+        <div class="ecard-str">String: <code>aaaa</code> (2²)</div>
+        <div class="ecard-why">Powers of 2 — exponential growth breaks DFA</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN TOOL -->
+  <section class="tool-section" id="tool">
+    <h2 class="section-title">Interactive Demonstration</h2>
+
+    <!-- STEP 1: INPUT -->
+    <div class="step-block" id="step1">
+      <div class="step-label">Step 1 · Input</div>
+      <div class="input-grid">
+        <div class="input-group">
+          <label>Language Preset</label>
+          <select id="langSelect">
+            <option value="anbn">L = { aⁿbⁿ | n ≥ 1 }</option>
+            <option value="anbncn">L = { aⁿbⁿcⁿ | n ≥ 1 }</option>
+            <option value="palindrome">L = { wwᴿ | w ∈ {a,b}* }</option>
+            <option value="a2n">L = { a^(2ⁿ) | n ≥ 0 }</option>
+            <option value="custom">Custom (free input)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Sample String <em>s</em></label>
+          <input type="text" id="stringInput" placeholder="e.g. aaabbb" maxlength="20"/>
+        </div>
+        <div class="input-group">
+          <label>Pumping Length <em>p</em></label>
+          <input type="number" id="pumpInput" min="1" max="10" value="3"/>
+        </div>
+      </div>
+      <button class="run-btn" id="runBtn">Run Demonstration ▶</button>
+    </div>
+
+    <!-- STEP 2: SPLIT VISUALIZATION -->
+    <div class="step-block hidden" id="step2">
+      <div class="step-label">Step 2 · String Decomposition</div>
+      <p class="step-desc">The string <em>s</em> is split into three parts: <span class="tag-x">x</span> + <span class="tag-y">y</span> + <span class="tag-z">z</span><br/>Condition: |y| ≥ 1 and |xy| ≤ p</p>
+      <div class="split-visual" id="splitVisual"></div>
+      <div class="split-legend">
+        <span class="leg-x">■ x (prefix)</span>
+        <span class="leg-y">■ y (pumpable)</span>
+        <span class="leg-z">■ z (suffix)</span>
+      </div>
+      <div class="split-info" id="splitInfo"></div>
+    </div>
+
+    <!-- STEP 3: PUMP CONTROL -->
+    <div class="step-block hidden" id="step3">
+      <div class="step-label">Step 3 · Pump the Middle (y)</div>
+      <p class="step-desc">Vary <em>i</em> to generate <strong>xy<sup>i</sup>z</strong> and check if it still belongs to L</p>
+      <div class="pump-control">
+        <button class="pump-btn" id="decreaseI">−</button>
+        <div class="i-display">
+          <div class="i-label">i =</div>
+          <div class="i-value" id="iValue">1</div>
+        </div>
+        <button class="pump-btn" id="increaseI">+</button>
+      </div>
+      <div class="pumped-visual" id="pumpedVisual"></div>
+      <div class="membership-result" id="membershipResult"></div>
+    </div>
+
+    <!-- STEP 4: PROOF -->
+    <div class="step-block hidden" id="step4">
+      <div class="step-label">Step 4 · Formal Proof</div>
+      <div class="proof-box" id="proofBox"></div>
+    </div>
+
+    <!-- STEP 5: SUMMARY TABLE -->
+    <div class="step-block hidden" id="step5">
+      <div class="step-label">Step 5 · Pumping Summary Table</div>
+      <div class="table-wrap">
+        <table class="pump-table" id="pumpTable">
+          <thead>
+            <tr>
+              <th>i</th>
+              <th>Generated String xy<sup>i</sup>z</th>
+              <th>Length</th>
+              <th>In Language?</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody id="pumpTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>Pumping Lemma Demonstration Tool · Theory of Automata &amp; Formal Languages</div>
+      <div class="footer-meta">Built with HTML · CSS · JavaScript and ♥ by Krishna</div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
